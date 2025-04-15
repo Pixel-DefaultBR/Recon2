@@ -24,6 +24,7 @@ Recon2 é uma ferramenta de automação de reconhecimento e enumeração para pe
 git clone https://github.com/Pixel-DefaultBR/Recon2.git
 cd Recon2
 chmod +x recon.sh
+```
 
 ⚠️ Aviso
 Esta ferramenta é para uso educacional e em ambientes autorizados. Nunca use Recon2 em sistemas sem permissão explícita. Seja ético! 🛡️
