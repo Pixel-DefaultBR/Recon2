@@ -10,6 +10,14 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 success() { echo -e "${GREEN}[✔]${NC} $1"; }
 error() { echo -e "${RED}[x]${NC} $1"; }
+clearTerminal(){ clear; }
+banner() {
+    figlet -f bloody "$1";
+    echo -e "$YELLOW : 2 : $GREEN==========================================$BLUE By: Pixel_DefaultBR $NC";
+}
+
+clearTerminal
+banner "Recon"
 
 START=$(date +%s)
 
@@ -18,14 +26,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-for bin in httpx subfinder gau nuclei; do
-    if ! command -v "$bin" &> /dev/null; then
-        error "A ferramenta $bin não foi encontrada! Verifique a instalação."
-        exit 1
-    fi
-done
-
-DOMAIN=$1
+DOMAIN=$(echo "$1" | sed -E 's~https?://~~;s~/$~~')
 RATE=${2:-50}
 DATE=$(date +%s)
 WORKDIR="/tmp/scan_${DOMAIN}_${DATE}"
@@ -53,9 +54,13 @@ httpx -l all_targets.txt -silent -status-code -mc 200 -o live_200.txt
 cut -d' ' -f1 live_200.txt > live.txt
 success "Alvos vivos (HTTP 200): $(wc -l < live.txt)"
 
-info "🚨 Rodando Nuclei com templates de exposição e misconfig..."
-nuclei -l live.txt -tags exposure,misconfig -rate-limit "$RATE" -o nuclei_exposure.txt
+info "🚨 Rodando Nuclei com templates de exposição..."
+nuclei -l live.txt -tags exposure,cve -rate-limit "$RATE" -o nuclei_exposure.txt
 success "Scan de exposure concluído (resultados em nuclei_exposure.txt)"
+
+info "🛡️ Rodando Nuclei com todos os templates dast disponíveis..."
+nuclei -l live.txt -t ~/nuclei-templates/dast -dast -rate-limit "$RATE" -o nuclei_all_templates.txt
+success "Scan geral concluído (resultados em nuclei_all_templates.txt)"
 
 END=$(date +%s)
 DURATION=$((END - START))
