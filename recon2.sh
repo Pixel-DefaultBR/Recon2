@@ -26,7 +26,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-DOMAIN=$(echo "$1" | sed -E 's~https?://~~;s~/$~~')
+DOMAIN=$1
 RATE=${2:-50}
 DATE=$(date +%s)
 WORKDIR="/tmp/scan_${DOMAIN}_${DATE}"
