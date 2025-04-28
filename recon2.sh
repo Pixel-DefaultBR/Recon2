@@ -79,7 +79,7 @@ cat subdomains.txt | gau --providers wayback,commoncrawl,otx,urlscan --subs > ga
 success "URLs arquivadas salvas em gau_output.txt ($(wc -l < gau_output.txt) encontradas)"
 
 info "🔍 Filtrando URLs com parâmetros..."
-grep '?' gau_output.txt | sort -u > urls_com_param.txt
+grep '?' gau_output.txt | sort -u > urls_with_param.txt
 success "URLs com parâmetros salvas em urls_with_param.txt ($(wc -l < urls_with_param.txt) encontradas)"
 
 info "🔗 Unindo subdomínios e URLs..."
