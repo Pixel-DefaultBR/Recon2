@@ -7,7 +7,7 @@ Recon2 é um script de automação de reconhecimento e enumeração para pentest
 - 🔍 Descoberta de subdomínios
 - 🌐 Verificação de hosts ativos
 - 🕵️‍♂️ Enumeração de serviços
-- ⚙️ Integração com ferramentas como `subfinder`, `httpx`, `nuclei`, `gau`
+- ⚙️ Integração com ferramentas como `subfinder`, `httpx`, `nuclei`, `gau`, `katana`, `waybackurl`, `dnsx`
 - 📂 Organização automática dos resultados
 
 ## 🛠️ Requisitos
@@ -18,6 +18,9 @@ Recon2 é um script de automação de reconhecimento e enumeração para pentest
   - `httpx`
   - `gau`
   - `nuclei`
+  - `katana`,
+  - `waybackurl`,
+  - `dnsx`
 
 ## 🔧 Instalação
 ```bash
