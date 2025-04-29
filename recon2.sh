@@ -34,7 +34,7 @@ show_help() {
 }
 
 clearTerminal
-banner "Recon"
+banner
 START=$(date +%s)
 
 if [[ "$1" == "--help" ]] || [[ -z "$1" ]]; then
@@ -45,6 +45,7 @@ DOMAIN=$1
 RATE=50
 USE_HTTPX=false
 USE_NUCLEI=false
+USE_DAST=false
 DAST_FLAG=""
 
 for arg in "$@"; do
@@ -56,10 +57,24 @@ for arg in "$@"; do
             USE_NUCLEI=true
             ;;
         --dast)
+            USE_DAST=true
             DAST_FLAG="-dast"
             ;;
     esac
 done
+
+# Mostrar quais módulos estão ativados
+ENABLED_MODULES=""
+$USE_HTTPX && ENABLED_MODULES+="httpx, "
+$USE_NUCLEI && ENABLED_MODULES+="nuclei, "
+$USE_DAST && ENABLED_MODULES+="dast, "
+ENABLED_MODULES=${ENABLED_MODULES%, }
+
+if [ -n "$ENABLED_MODULES" ]; then
+    info "🧩 Módulos ativados: ${YELLOW}$ENABLED_MODULES${NC}"
+else
+    warn "⚠️  Nenhum módulo extra foi ativado."
+fi
 
 DATE=$(date +%s)
 WORKDIR="/tmp/scan_${DOMAIN}_${DATE}"
@@ -94,7 +109,7 @@ cat katana_raw.txt | hakrawler -d 3 | anew hakrawler_raw.txt
 
 cat katana_raw.txt hakrawler_raw.txt | sort -u > crawled_urls.txt
 success "Crawling completo. URLs salvas em crawled_urls.txt ($(wc -l < crawled_urls.txt))"
- 
+
 info "🔍 Filtrando URLs com parâmetros..."
 grep '?' all_urls.txt | sort -u > urls_with_param.txt
 success "URLs com parâmetros salvas em urls_with_param.txt ($(wc -l < urls_with_param.txt) encontradas)"
@@ -103,7 +118,7 @@ info "🔗 Unindo subdomínios e URLs..."
 cat subdomains.txt all_urls.txt crawled_urls.txt | sort -u > all_targets.txt
 success "Alvos totais combinados: $(wc -l < all_targets.txt)"
 
-if [ "$USE_HTTPX" = true ]; then
+if [[ "$USE_HTTPX" = true ]]; then
     info "🌐 Verificando alvos online com httpx (códigos 200)..."
     httpx -l all_targets.txt -silent -status-code -mc 200 -o live_200.txt
     cut -d' ' -f1 live_200.txt > live.txt
@@ -113,12 +128,12 @@ else
     cp all_targets.txt live.txt
 fi
 
-if [ "$USE_NUCLEI" = true ]; then
+if [[ "$USE_NUCLEI" = true ]]; then
     info "🚨 Rodando Nuclei com templates de exposição..."
     nuclei -l live.txt -tags exposure,cve -rate-limit "$RATE" -o nuclei_exposure.txt
     success "Scan de exposure concluído (resultados em nuclei_exposure.txt)"
 
-    if [ -n "$DAST_FLAG" ]; then
+    if [[ -n "$DAST_FLAG" ]]; then
         info "🧪 DAST ativado: rodando templates completos com Nuclei..."
     else
         warn "🧪 DAST não ativado. Rodando templates padrão."
