@@ -82,21 +82,25 @@ info "📦 Coletando URLs arquivadas com gau..."
 cat subdomains.txt | gau --providers wayback,commoncrawl,otx,urlscan --subs > gau_output.txt
 success "URLs arquivadas salvas em gau_output.txt ($(wc -l < gau_output.txt) encontradas)"
 
-info "🌍 Coletando mais URLs com waybackurls..."
-cat subdomains.txt | waybackurls >> gau_output.txt
+info "🌍 Coletando URLs arquivadas com waybackurls..."
+cat subdomains.txt | waybackurls | anew gau_output.txt > /dev/null
+
 sort -u gau_output.txt > all_urls.txt
-success "URLs combinadas salvas em all_urls.txt ($(wc -l < all_urls.txt) no total)"
+success "Todas URLs combinadas salvas em all_urls.txt ($(wc -l < all_urls.txt) no total)"
 
-info "🕷️ Rodando Katana para crawling..."
-katana -list subdomains.txt -silent -o katana_output.txt
-success "Resultados do katana salvos em katana_output.txt ($(wc -l < katana_output.txt))"
+katana -list all_urls.txt -silent -o katana_raw.txt
 
+cat katana_raw.txt | hakrawler -d 3 | anew hakrawler_raw.txt
+
+cat katana_raw.txt hakrawler_raw.txt | sort -u > crawled_urls.txt
+success "Crawling completo. URLs salvas em crawled_urls.txt ($(wc -l < crawled_urls.txt))"
+ 
 info "🔍 Filtrando URLs com parâmetros..."
 grep '?' all_urls.txt | sort -u > urls_with_param.txt
 success "URLs com parâmetros salvas em urls_with_param.txt ($(wc -l < urls_with_param.txt) encontradas)"
 
 info "🔗 Unindo subdomínios e URLs..."
-cat subdomains.txt all_urls.txt katana_output.txt | sort -u > all_targets.txt
+cat subdomains.txt all_urls.txt crawled_urls.txt | sort -u > all_targets.txt
 success "Alvos totais combinados: $(wc -l < all_targets.txt)"
 
 if [ "$USE_HTTPX" = true ]; then
