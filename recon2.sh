@@ -4,7 +4,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[1;34m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
@@ -74,16 +74,29 @@ info "🔎 Coletando subdomínios com subfinder..."
 subfinder -d "$DOMAIN" -silent > subdomains.txt
 success "Subdomínios salvos em subdomains.txt ($(wc -l < subdomains.txt) encontrados)"
 
+info "📡 Resolvendo subdomínios com dnsx..."
+dnsx -l subdomains.txt -silent -resp -a -aaaa -cname -ns > resolved_subdomains.txt
+success "Subdomínios resolvidos salvos em resolved_subdomains.txt ($(wc -l < resolved_subdomains.txt) válidos)"
+
 info "📦 Coletando URLs arquivadas com gau..."
 cat subdomains.txt | gau --providers wayback,commoncrawl,otx,urlscan --subs > gau_output.txt
 success "URLs arquivadas salvas em gau_output.txt ($(wc -l < gau_output.txt) encontradas)"
 
+info "🌍 Coletando mais URLs com waybackurls..."
+cat subdomains.txt | waybackurls >> gau_output.txt
+sort -u gau_output.txt > all_urls.txt
+success "URLs combinadas salvas em all_urls.txt ($(wc -l < all_urls.txt) no total)"
+
+info "🕷️ Rodando Katana para crawling..."
+katana -list subdomains.txt -silent -o katana_output.txt
+success "Resultados do katana salvos em katana_output.txt ($(wc -l < katana_output.txt))"
+
 info "🔍 Filtrando URLs com parâmetros..."
-grep '?' gau_output.txt | sort -u > urls_with_param.txt
+grep '?' all_urls.txt | sort -u > urls_with_param.txt
 success "URLs com parâmetros salvas em urls_with_param.txt ($(wc -l < urls_with_param.txt) encontradas)"
 
 info "🔗 Unindo subdomínios e URLs..."
-cat subdomains.txt gau_output.txt | sort -u > all_targets.txt
+cat subdomains.txt all_urls.txt katana_output.txt | sort -u > all_targets.txt
 success "Alvos totais combinados: $(wc -l < all_targets.txt)"
 
 if [ "$USE_HTTPX" = true ]; then
