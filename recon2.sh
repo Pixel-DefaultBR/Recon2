@@ -42,7 +42,7 @@ if [[ "$1" == "--help" ]] || [[ -z "$1" ]]; then
 fi
 
 DOMAIN=$1
-RATE=${2:-50}
+RATE=50
 USE_HTTPX=false
 USE_NUCLEI=false
 DAST_FLAG=""
